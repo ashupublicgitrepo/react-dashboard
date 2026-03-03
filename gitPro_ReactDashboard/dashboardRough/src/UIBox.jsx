@@ -1,6 +1,5 @@
 import React from "react";
-const UIBox = ({ task }) => {
-  
+const UIBox = ({ task, taskDeleter }) => {
     return (
         <>
             <table>
@@ -13,12 +12,13 @@ const UIBox = ({ task }) => {
                     </tr>
             </thead>
                 <tbody>
-                    {task.map((e, i) => {
+                    {task && task.map((e, i) => {
                         return <tr key={i}>
-                            <td>{e.id}</td>
+                            <td>{i+1}</td>
                             <td>{e.title}</td>
                             <td>{e.status}</td>
-                            <td><button hidden={e.id?false:true}>mark as complete</button></td>
+                            <td><button>mark as complete</button></td>
+                            <td><button onClick={()=>taskDeleter(i)}>delete from list</button></td>
                         </tr>
                     })}
                 </tbody>

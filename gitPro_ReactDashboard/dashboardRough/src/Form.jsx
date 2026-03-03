@@ -1,11 +1,11 @@
 import React from "react";
-const Form = ({ taskAdder, data, dataSetter }) => {
+const Form = ({ taskAdder, data, dataSetter, button }) => {
    
     return (
       <>
-        <form action="" onSubmit={(e) => taskAdder(e)}>
+        <form  action="" onSubmit={(e) => taskAdder(e)}>
           <input type="text" value={data} onChange={dataSetter} />
-          <button>add task</button>
+          <button disabled={button ==="_taskButton"}>add task</button>
         </form>
       </>
     );
