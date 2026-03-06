@@ -11,7 +11,7 @@ const App = () => {
     status: null,
     action: null,
     targetId: null,
-    editingId:null,
+   
   });
   
   // function localSyncher() {
@@ -34,7 +34,7 @@ const App = () => {
     })
   }
   function wait() {
-    return new Promise(res => setTimeout(res, 100));
+    return new Promise(res => setTimeout(res, 200));
   }
    function stateSetter(newSt) {
     setState(pr => ({ ...pr, ...newSt })); 
@@ -47,21 +47,19 @@ const App = () => {
      return;
    };
    try {
-     if (state.editingId) {
+     if (state.targetId) {
       stateSetter({
         phase: "loading",
         action: "taskButton",
         status: "taskEditing",
       });
-       const editedList = [...task];
-       editedList[state.targetId].title = data;
+       const editedList = task.map(t => t.id === state.targetId ? {...t,title:data}:t);
        await server();
        setTask(editedList);
        stateSetter({
          phase: "idle",
          status: "edited",
          action: null,
-         editingId: null,
          targetId:null
        });
         stateSetter({ phase: "idle", status: "edited", action: null });
@@ -87,21 +85,19 @@ const App = () => {
    } 
    finally {
      setData("");
-     stateSetter({phase:"idle", action:null, targetId:null, editingId:null})
-     await wait();
    }
   }
   function dataSetter(e) {
     const data = e.target.value;
     setData(data); 
   }
-  async function taskDeleter(indexNum, id) {
+  async function taskDeleter(id) {
     if (state.phase === "loading") return false;
     stateSetter({ phase: "loading", status: "taskDelete", action: "delete", targetId:id });
-    const taskListNew = [...task];
+    const taskListNew = task.filter(t => t.id !== id);
+    
     try {
-      await server();
-      taskListNew.splice(indexNum, 1);
+      await server()
       stateSetter({ phase: "success", status: "deleted", action: null, targetId:null });
       await wait();
       setTask(taskListNew);
@@ -109,29 +105,55 @@ const App = () => {
       stateSetter({ phase: "error", status: "deleteFailed", action: null });
     } finally {
       await wait();
-      
       stateSetter({ phase: "idle", status: null, action: null, targetId: null });
     }
   };
   function editorData(id, index) {
+    if (state.phase === "loading") return false;
+    stateSetter({ phase: "idle", status: "editProgress", action:"editButton",targetId: id });
     const taskToEdit = task.find(t => t.id == id);
-    stateSetter({targetId: index, editingId: id, status:"editProgress" });
     setData(taskToEdit.title);
   }
- 
+  async function completer(id) {
+    if (state.phase === "loading") return false;
+    stateSetter({ phase: "loading", status: "marking", action: "marker", targetId:id });
+    await wait();
+    try { 
+      const completedList = task.map(t => {
+        if (t.id === id) {
+         return  t.status === "pending" ? { ...t, status: "completed" } : { ...t, status: "pending" };
+        } else {
+          return t;
+        }
+      } );
+      await server();
+      setTask(completedList);
+    } catch {
+      
+    }
+    finally {
+      await wait();
+      stateSetter({ phase: "ideal", status: "marked", action: null, targetId: null,  });
+    }
+
+ }
  
  
   return (
     <>
       <Header />
       <Form
+        targetId={state.targetId}
         data={data}
         taskAdder={taskAdder}
         disable={state.phase}
         dataSetter={dataSetter}
+        action={state.action}
       />
       <UIMsg status={state.status} />
       <UIBox
+        action={state.action}
+        completer={completer}
         task={task}
         editorData={editorData}
         taskDeleter={taskDeleter}

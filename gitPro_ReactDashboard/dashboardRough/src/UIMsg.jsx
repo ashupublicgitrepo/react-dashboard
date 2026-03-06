@@ -8,7 +8,10 @@ const UIMsg = ({status}) => {
       deleted: "task has been deleted from list successfully.",
       taskEditing: "...task is editing, please wait",
       edited: "task edited successfully.",
-      editProgress: "please enter data to edit this task."
+      editProgress: "please enter data to edit this task.",
+      taskDelete: "task has been ...deleting.",
+      marking: "...marking as completed, please wait.",
+      marked:"task marked as completed."
     };
     function statusMapper() {
         return statusMap[status];
