@@ -4,7 +4,11 @@ import UIBox from "./UIBox";
 import Form from "./Form";
 import UIMsg from "./UIMsg";
 const App = () => {
-  const [task, setTask] = useState([]);
+  const [task, setTask] = useState(() => {
+    const localSavedTasks = localStorage.getItem("task");
+    const parsedList = JSON.parse(localSavedTasks);
+    return localSavedTasks ? [...parsedList] : [];
+  });
   const [data, setData] = useState("");
   const [state, setState] = useState({
     phase: "idle",
@@ -13,19 +17,14 @@ const App = () => {
     targetId: null,
    
   });
+  useEffect(() => {
+     const localTask = [...task];
+     const stringList = JSON.stringify(localTask);
+     localStorage.setItem("task", stringList);
+  }, [task]);
+ 
+   
   
-  // function localSyncher() {
-  //   const newLocal = [...task];
-  //   const strigifiedTask = JSON.stringify(newLocal);
-  //   localStorage.setItem("task", strigifiedTask);
-  // }
-  // function localToSever() {
-  //   if (task.length > 1) return false;
-  //   const localStored = JSON.parse(localStorage.getItem("task"));
-  //   setTask([...localStored]);
-  //   console.log(localStorage.getItem("task"));
-  // }
-  // today, no local storage saving, list update issues. 
   function server() {
     return new Promise((res, rej) => {
       setTimeout(() => {
@@ -62,7 +61,7 @@ const App = () => {
          action: null,
          targetId:null
        });
-        stateSetter({ phase: "idle", status: "edited", action: null });
+       
      } else {
         stateSetter({
           phase: "loading",
@@ -85,6 +84,8 @@ const App = () => {
    } 
    finally {
      setData("");
+     
+    //  now the problem with localSyncher is that, it can not save to local the current but previous values, because of react state update betching, 
    }
   }
   function dataSetter(e) {
@@ -106,9 +107,10 @@ const App = () => {
     } finally {
       await wait();
       stateSetter({ phase: "idle", status: null, action: null, targetId: null });
+      
     }
   };
-  function editorData(id, index) {
+  function editorData(id) {
     if (state.phase === "loading") return false;
     stateSetter({ phase: "idle", status: "editProgress", action:"editButton",targetId: id });
     const taskToEdit = task.find(t => t.id == id);
@@ -133,7 +135,7 @@ const App = () => {
     }
     finally {
       await wait();
-      stateSetter({ phase: "ideal", status: "marked", action: null, targetId: null,  });
+      stateSetter({ phase: "idle", status: "marked", action: null, targetId: null,  });
     }
 
  }

@@ -9,6 +9,9 @@ const UIBox = ({
   completer,
   action
 }) => {
+
+
+  
   return (
     <>
       <table>
