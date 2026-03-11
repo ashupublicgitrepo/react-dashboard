@@ -3,8 +3,9 @@ import Header from "./Header";
 import UIBox from "./UIBox";
 import Form from "./Form";
 import UIMsg from "./UIMsg";
-let rejectCount=1;
+
 const App = () => {
+  const [rejectCount, setRejectCount] = useState(1);
   const [task, setTask] = useState(() => {
    try{ const localSavedTasks = localStorage.getItem("task");
       return localSavedTasks ? JSON.parse(localSavedTasks) : [];
@@ -20,20 +21,17 @@ const App = () => {
     status: null,
     action: null,
     targetId: null,
-   
   });
   useEffect(() => {
-     const localTask = [...task];
-     const stringList = JSON.stringify(localTask);
-    localStorage.setItem("task", stringList);
+    localStorage.setItem("task", JSON.stringify(task));
   }, [task]);
   useEffect(() => {
     async function fetcher() {
-      try{stateSetter({ phase: "loading", action: "fetching" });
+      try{updateState({ phase: "loading", action: "fetching" });
       await server(); 
-        stateSetter({ phase: "idle", action: null });
+        updateState({ phase: "idle", action: null });
       } catch {
-        stateSetter({ status: "fetchFailed", action:"fetching" });
+        updateState({ status: "fetchFailed", action:"fetching" });
       }
     }
     fetcher();
@@ -44,12 +42,11 @@ const App = () => {
     return new Promise((res, rej) => {
       setTimeout(() => {
         if (rejectCount % 6 == 0) {
-          console.log('promise is rejected.')
           rej();
         } else {
           res();
         }
-        rejectCount++;
+        setRejectCount(pr => pr + 1);
         
       }, 800);
     })
@@ -57,113 +54,131 @@ const App = () => {
   function wait() {
     return new Promise(res => setTimeout(res, 200));
   }
-   function stateSetter(newSt) {
+   function updateState(newSt) {
     setState(pr => ({ ...pr, ...newSt })); 
   }
  async function taskAdder(e) {
    e.preventDefault();
-   if (state.phase === "loading") return false;
+   if (state.phase === "loading" ) {
+     updateState({ status: "parallelProcess" });
+     return false;
+   }
    if (data.length < 1) {
-     stateSetter({ phase: "idle", status: "emptyInput", action: null });
-     return;
-   };
+     updateState({ phase: "idle", status: "emptyInput", action: "editButton" });
+     return false;
+   }
+
    try {
      if (state.targetId) {
-      stateSetter({
-        phase: "loading",
-        action: "taskButton",
-        status: "taskEditing",
-      });
-       const editedList = task.map(t => t.id === state.targetId ? {...t,title:data}:t);
+       updateState({
+         phase: "loading",
+         action: "taskButton",
+         status: "taskEditing",
+       });
+       const editedList = task.map((t) =>
+         t.id === state.targetId ? { ...t, title: data } : t,
+       );
        await server();
        setTask(editedList);
-       stateSetter({
+       updateState({
          phase: "idle",
          status: "edited",
          action: null,
-         targetId:null
+         targetId: null,
        });
-       
+        setData("");
      } else {
-        stateSetter({
-          phase: "loading",
-          action: "taskButton",
-          status: "taskAdding",
-        });
-        await wait();
-        await server();
-        const newTask = {
-          id: Date.now(),
-          title: data,
-          status: "pending",
-        };
-        setTask((pr) => [...pr, newTask]);
-        stateSetter({ phase: "idle", status: "uploaded", action: null });
-         
-      }
-    }catch {
-     stateSetter({ phase: "error", status: "uploadFailed", action: null });
-   } 
-   finally {
-     setData("");
+       updateState({
+         phase: "loading",
+         action: "taskButton",
+         status: "taskAdding",
+       });
+       await wait();
+       await server();
+       const newTask = {
+         id: Date.now(),
+         title: data,
+         status: "pending",
+       };
+       setTask((pr) => [...pr, newTask]);
+       updateState({ phase: "idle", status: "uploaded", action: null });
+       setData("");
+     }
+   } catch {
+     updateState({ phase: "error", status: "uploadFailed", action: null });
+   } finally {
      
-   
    }
-  }
+ }
   function dataSetter(e) {
     const data = e.target.value;
     setData(data); 
   }
   async function taskDeleter(id) {
-    if (state.phase === "loading") return false;
-    stateSetter({ phase: "loading", status: "taskDelete", action: "delete", targetId:id });
+    if (state.phase === "loading" || state.targetId) {
+      updateState({status:"parallelProcess"})
+      return false
+    };
+    updateState({ phase: "loading", status: "deleting", action: "delete", targetId:id });
     const taskListNew = task.filter(t => t.id !== id);
-    
+    // i want to know, where is old task list gone, means every previous state, which is removed, how it is deleted from data.system level question.
     try {
       await server()
-      stateSetter({ phase: "success", status: "deleted", action: null, targetId:null });
+      updateState({ phase: "success", status: "deleted", action: null, targetId:null });
       await wait();
       setTask(taskListNew);
     } catch {
-      stateSetter({ phase: "error", status: "deleteFailed", action: null });
+      updateState({ phase: "error", status: "deleteFailed", action: null });
     } finally {
       await wait();
-      stateSetter({ phase: "idle", action: null, targetId: null });
+      updateState({ phase: "idle", action: null, targetId: null });
+      setData("");
       
     }
   };
   function editorData(id) {
     if (state.phase === "loading") return false;
-    stateSetter({ phase: "idle", status: "editProgress", action:"editButton",targetId: id });
+    updateState({ phase: "idle", status: "editProgress", action:"editButton",targetId: id });
     const taskToEdit = task.find(t => t.id === id);
+    if (!taskToEdit) return;
     setData(taskToEdit.title);
+    
   }
   async function completer(id) {
-    if (state.phase === "loading") return false;
-    stateSetter({ phase: "loading", status: "marking", action: "marker", targetId:id });
+    if (state.phase === "loading" || state.targetId) {
+      updateState({ status: "parallelProcess" });
+      return false;
+    }
+    updateState({
+      phase: "loading",
+      status: "marking",
+      action: "marker",
+      targetId: id,
+    });
     await wait();
-    try { 
-      const completedList = task.map(t => {
+    try {
+      const completedList = task.map((t) => {
         if (t.id === id) {
-         return  t.status === "pending" ? { ...t, status: "completed" } : { ...t, status: "pending" };
+          return t.status === "pending"
+            ? { ...t, status: "completed" }
+            : { ...t, status: "pending" };
         } else {
           return t;
         }
-      } );
+      });
       await server();
       setTask(completedList);
-      stateSetter({status:"marked"})
+      updateState({ status: "marked" });
     } catch {
-      stateSetter({status:"markError"})
-    }
-    finally {
+      updateState({ status: "markError" });
+    } finally {
       await wait();
-      stateSetter({ phase: "idle", action: null, targetId: null, });
+      updateState({ phase: "idle", action: null, targetId: null });
       setData("");
     }
- }
+  }
   function taskFilterer(e) {
-   
+    if (state.phase === "loading") return false;
     setFilter(e);
  }
  
