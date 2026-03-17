@@ -1,21 +1,24 @@
 import React from "react";
 
-const Search = ({input, inputSetter, phase}) => {
-    
+const Search = ({input, inputSetter, phase, data}) => {
+ 
     return (
       <>
-        {phase ==="idle" && (<div>
-          <form action="" onSubmit={(e) => e.preventDefault()}>
-            <label htmlFor="search">search user </label>
-            <input
-              type="text"
-              onChange={(e) => inputSetter(e)}
-              value={input}
-              id="search"
-              name="searchBox"
-            />
-          </form>
-        </div>)}
+        {phase === "idle" && data.length>0  && (
+            <div>
+              <form action="" onSubmit={(e) => e.preventDefault()}>
+                <label htmlFor="search">search user </label>
+                <input
+                  type="text"
+                  onChange={(e) => inputSetter(e)}
+                  value={input}
+                  id="search"
+                  name="searchBox"
+              />
+              
+              </form>
+            </div>
+          )}
       </>
     );
 }

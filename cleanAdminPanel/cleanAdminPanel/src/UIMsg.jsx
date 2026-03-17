@@ -5,7 +5,9 @@ const UIMsg = ({ status, fetcher }) => {
     const msgMapper = {
       load: "...loading",
       serverError: "internal server error. Please try again.",
-      userNotFound: "searched user not found, please check initials."
+      deleted: "user successfully removed",
+      deleteFailed: "server error, please try again."
+    
     };
 
     function uimsger() {
