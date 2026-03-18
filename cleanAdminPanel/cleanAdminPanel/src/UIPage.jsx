@@ -1,27 +1,26 @@
-import { useState } from "react";
-import React  from "react";
+import React from "react";
 import "./TableStyles.css";
+import { useOutletContext } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-const UIPage = ({ data, input, phase, deleter}) => {
-  
-   
- 
-    const userList = data.filter(u => {
-      if (!input) return true;
-      else return u.name.toUpperCase().includes(input.trim().toUpperCase());
-    });
+const UIPage = () => {
+  const { userStates, actions } = useOutletContext();
+
+  const userList = userStates.data.filter((u) => {
+    if (!userStates.input) return true;
+    else return u.name.toUpperCase().includes(userStates.input.trim().toUpperCase());
+  });
   function UImsger() {
-    if (phase !== "idle") return false;
-    if (data.length < 1) return "NO USERS AVAILABLE"
-    if (userList.length < 1) return "no matching users found"
-    
- }
-  
-  
-    
+    if (userStates.phase !== "idle") return false;
+    if (userStates.data.length < 1) return "NO USERS AVAILABLE";
+    if (userList.length < 1) return "no matching users found";
+  }
+
   return (
     <>
-      {userList.length<1 ? UImsger() : (
+      {userList.length < 1 ? (
+        UImsger()
+      ) : (
         <table className="my-table">
           <thead>
             <tr>
@@ -38,20 +37,27 @@ const UIPage = ({ data, input, phase, deleter}) => {
                 <tr key={e.id}>
                   <td>{i + 1}</td>
                   <td>{e.id}</td>
-                  <td>{e.name}</td>
+                  <td>
+                    <Link
+                      className="my-user"
+                      to="/userDetail"
+                      onClick={() => actions.targetIdSetter(e.id)}
+                    >
+                      {e.name}
+                    </Link>
+                  </td>
                   <td>{e.email}</td>
                   <td>{e.company.name}</td>
                   <td>
-                    <button onClick={() => deleter(e.id)}>delete</button>
+                    <button onClick={() => actions.deleter(e.id)}>delete</button>
                   </td>
                 </tr>
               );
             })}
           </tbody>
-        </table>)
-      }
+        </table>
+      )}
     </>
   );
-
-}
+};
 export default UIPage;

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Header from "./Header.jsx";
-import UIPage from "./UIPage.jsx";
 import UIMsg from "./UIMsg.jsx";
 import Search from "./Search.jsx";
+import UserPage from "./UserPage.jsx";
 
 const url = "https://jsonplaceholder.typicode.com/users?_limit=10";
 const App = () => {
@@ -11,7 +11,7 @@ const App = () => {
   const [state, setState] = useState({
     phase:"loading",
     status: "load",
-    
+    targetId:null
   });
    function inputSetter(e) {
      const valueInInputTerminal = e.target.value;
@@ -37,6 +37,9 @@ const App = () => {
       updateState({ phase: "error", status: "serverError" });
     }
   }
+  function targetIdSetter(id) {
+    updateState({ targetId: id });
+  }
   useEffect(() => {
     fetcher();
   }, []);
@@ -59,9 +62,10 @@ const App = () => {
   return (
     <>
       <Header />
-      <Search data={data} input={input} inputSetter={inputSetter} phase={state.phase} />
+      <Search data={data} input={input} inputSetter={inputSetter} phase={state.phase} targetId={state.targetId} />
       <UIMsg status={state.status} fetcher={fetcher} />
-      <UIPage phase={state.phase} data={data} input={input} deleter={deleter}  />
+      <UserPage phase={state.phase} data={data} input={input} deleter={deleter} targetIdSetter={targetIdSetter} targetId={state.targetId}/>
+      
     </>
   );
 };
