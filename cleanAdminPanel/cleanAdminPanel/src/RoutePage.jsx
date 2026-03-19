@@ -11,17 +11,14 @@ const appRoute = createBrowserRouter([
         children: [
            
             {
-                path: "userDetail",
-                element: <UserDetailPage />
-            },
-            {
                 index:true,
                 element: <UIPage />
             },
             {
-                path: "users",
-                element:<UIPage/>
-        }]
+                path: "userDetail",
+                element: <UserDetailPage />
+            },
+           ]
     }
 ]
            
