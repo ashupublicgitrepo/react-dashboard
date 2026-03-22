@@ -5,18 +5,40 @@ import "./TableStyles.css";
 
 const UserDetailPage = () => {
   const { userStates, selections, actions } = useOutletContext();
-  const user = userStates.data.find((u) => u.id === selections.targetId);
+  const targetId = selections.targetId;
+  const user = userStates.data.find((u) => u.id === targetId);
   const [comment, setComment] = useState({
     phase: null,
     targetId: null,
     comments: [],
     error:null
   });
+   
   const [userPosts, setUserPosts] = useState({
     phase: "idle",
     error: null,
     post:[]
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalItems = userPosts.post.length;
+  const itemsPerPage = 2;
+  const maxPage = Math.ceil(totalItems / itemsPerPage);
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = currentPage * itemsPerPage;
+  const visibleUsers = userPosts.post.slice(start, end);
+
+  function pageSetter(page) {
+    setCurrentPage(pr => {
+      if (page === "next") {
+        if (pr < maxPage) return pr + 1;
+        return pr;
+      }
+      if (page === "previous") {
+        if (pr > 1) return pr - 1;
+        return pr;
+      }
+    })
+  }
   function updateState(newState) {
     setUserPosts((pr) => ({ ...pr, ...newState }));
   }
@@ -57,7 +79,7 @@ const UserDetailPage = () => {
       .catch((err) =>setComment(pr => ({ ...pr,targetId:id,comments:[], phase: "error", error: err.message })) );
   }
   useEffect(() => {
-    if(selections.targetId) userPostFetcher();
+    if (selections.targetId) userPostFetcher();
   }, [selections.targetId]);
 
   return (
@@ -76,10 +98,15 @@ const UserDetailPage = () => {
               <p className="user-info">Phone : {user.phone}</p>
               <p className="user-info">Website : {user.website}</p>
               <p className="user-info">Company : {user.company.name}</p>
-              <p className="user-info">Address : {user.address.street}</p>
+                <p className="user-info">Address : {user.address.street}</p>
+                <div style={{textAlign:"center"}}>
+                  {targetId > 1 && <button onClick={() => actions.targetIdSetter(targetId - 1)}>previous User</button>}
+                 {targetId < userStates.data.length && <button onClick={()=>actions.targetIdSetter(targetId+1)}>next User</button>}
+                </div>
             </div>
             <div className="userpost-div">
               <h3>user posts</h3>
+              {currentPage>1 && <button onClick={() => pageSetter("previous")}>previous</button>}
               {userPosts.phase === "loading" ? (
                 <p>...loading</p>
               ) : userPosts.phase === "error" ? (
@@ -88,7 +115,7 @@ const UserDetailPage = () => {
                   <button onClick={userPostFetcher}>retry</button>
                 </div>
               ) : (
-                userPosts.post.map((d) => {
+                visibleUsers.map((d) => {
                   return (
                     <div key={d.id}>
                       <h4 className="user-postTitle">{d.title}</h4>
@@ -105,8 +132,10 @@ const UserDetailPage = () => {
                             <p>...loading</p>
                           ) : comment.phase === "error" ? (
                             <div>
-                                <p>{comment.error}</p>
-                                <button onClick={()=>commentFetcher(d.id)}>retry</button>
+                              <p>{comment.error}</p>
+                              <button onClick={() => commentFetcher(d.id)}>
+                                retry
+                              </button>
                             </div>
                           ) : (
                             comment.comments.map((e) => (
@@ -128,6 +157,9 @@ const UserDetailPage = () => {
                   );
                 })
               )}
+
+              {currentPage<maxPage? (<button onClick={() => pageSetter("next")}>next</button>): (<p>this is last page</p>)}
+              <p>page {currentPage}</p>
             </div>
           </div>
         </>

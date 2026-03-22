@@ -2,60 +2,86 @@ import React from "react";
 import "./TableStyles.css";
 import { useOutletContext } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const UIPage = () => {
   const { userStates, actions } = useOutletContext();
-
-  const userList = userStates.data.filter((u) => {
+  const [currentPage, setCurrentPage] = useState(1);
+const searchedList = userStates.data.filter(u => {
     if (!userStates.input) return true;
-    else return u.name.toUpperCase().includes(userStates.input.trim().toUpperCase());
-  });
+    return u.name.toUpperCase().includes(userStates.input.toUpperCase())
+  })
+  const itemsPerPage = 5;
+  const totalItems = searchedList.length;
+  const maxPage = Math.ceil(totalItems / itemsPerPage);
+  const start = (currentPage-1) * itemsPerPage;
+  const end =  currentPage*itemsPerPage;
+  const visibleUsers = searchedList.slice(start, end);
+  
+  function pageSetter(e) {
+    setCurrentPage(pr => {
+      if (e === "next") {
+        if (pr < maxPage) return pr + 1;
+        return pr;      
+      };
+      if (e === "previous") {
+        if (pr >1) return pr-1;
+        return pr;
+      }
+    })
+  }
   function UImsger() {
     if (userStates.phase !== "idle") return false;
     if (userStates.data.length < 1) return "NO USERS AVAILABLE";
-    if (userList.length < 1) return "no matching users found";
+    if (visibleUsers.length < 1) return "no matching users found";
   }
 
   return (
     <>
-      {userList.length < 1 ? (
+      {currentPage>1 && <button onClick={() => pageSetter("previous")}>previous</button>}
+     {currentPage< maxPage && <button onClick={() => pageSetter("next")}>Next</button>}
+      {visibleUsers.length < 1 ? (
         UImsger()
       ) : (
-        <table className="my-table">
-          <thead>
-            <tr>
-              <th>sr. no.</th>
-              <th>id</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Company</th>
-            </tr>
-          </thead>
-          <tbody>
-            {userList.map((e, i) => {
-              return (
-                <tr key={e.id}>
-                  <td>{i + 1}</td>
-                  <td>{e.id}</td>
-                  <td>
-                    <Link
-                      className="my-user"
-                      to="/userDetail"
-                      onClick={() => actions.targetIdSetter(e.id)}
-                    >
-                      {e.name}
-                    </Link>
-                  </td>
-                  <td>{e.email}</td>
-                  <td>{e.company.name}</td>
-                  <td>
-                    <button onClick={() => actions.deleter(e.id)}>delete</button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div>
+          <table className="my-table">
+            <thead>
+              <tr>
+                <th>sr. no.</th>
+                <th>id</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Company</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleUsers.map((e, i) => {
+                return (
+                  <tr key={e.id}>
+                    <td>{i + 1}</td>
+                    <td>{e.id}</td>
+                    <td>
+                      <Link
+                        className="my-user"
+                        to="/userDetail"
+                        onClick={() => actions.targetIdSetter(e.id)}
+                      >
+                        {e.name}
+                      </Link>
+                    </td>
+                    <td>{e.email}</td>
+                    <td>{e.company.name}</td>
+                    <td>
+                      <button onClick={() => actions.deleter(e.id)}>
+                        delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </>
   );

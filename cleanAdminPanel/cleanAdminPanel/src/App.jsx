@@ -8,14 +8,18 @@ const url = "https://jsonplaceholder.typicode.com/users?_limit=10";
 const App = () => {
   const [data, setData] = useState([]);
   const [input, setInput] = useState("");
-  const [state, setState] = useState({
-    phase:"loading",
-    status: "load",
-    targetId:null
+  const [state, setState] = useState(() => {
+    const userId = localStorage.getItem("userId");
+    const user = JSON.parse(userId);
+    if(!userId) return { phase: "loading", status: "load", targetId: null  };
+    return { phase: "idle", status: null, targetId: user  };
   });
+ 
+ 
    function inputSetter(e) {
      const valueInInputTerminal = e.target.value;
      setInput(valueInInputTerminal);
+    
    }
   async function wait() {
     return new Promise(res=>setTimeout(res,1000))
@@ -38,11 +42,19 @@ const App = () => {
     }
   }
   function targetIdSetter(id) {
+    if (id > data.length) return false;
     updateState({ targetId: id });
   }
   useEffect(() => {
     fetcher();
   }, []);
+  useEffect(() => {
+    
+    const userId = state.targetId;
+    if (userId !== null) {
+      localStorage.setItem("userId", userId);
+    }
+  },[state.targetId])
   
   async function deleter(id) {
     const confirmation = window.confirm("are you sure");
@@ -62,7 +74,7 @@ const App = () => {
   return (
     <>
       <Header />
-      <Search data={data} input={input} inputSetter={inputSetter} phase={state.phase} targetId={state.targetId} />
+      <Search data={data} input={input} inputSetter={inputSetter} phase={state.phase} targetId= {state.targetId} />
       <UIMsg status={state.status} fetcher={fetcher} />
       <UserPage phase={state.phase} data={data} input={input} deleter={deleter} targetIdSetter={targetIdSetter} targetId={state.targetId}/>
       

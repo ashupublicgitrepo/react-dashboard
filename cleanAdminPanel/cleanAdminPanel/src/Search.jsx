@@ -1,7 +1,7 @@
 import React from "react";
 
 const Search = ({input, inputSetter, phase, data, targetId}) => {
- 
+
     return (
       <>
         {phase === "idle" && data.length>0 && !targetId && (
