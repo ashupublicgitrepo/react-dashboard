@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./TableStyles.css";
 import { useOutletContext } from "react-router-dom";
 import { Link } from "react-router-dom";
@@ -17,7 +17,11 @@ const searchedList = userStates.data.filter(u => {
   const start = (currentPage-1) * itemsPerPage;
   const end =  currentPage*itemsPerPage;
   const visibleUsers = searchedList.slice(start, end);
-  
+  useEffect(() => {
+    setCurrentPage(1);
+  },[userStates.input])
+
+
   function pageSetter(e) {
     setCurrentPage(pr => {
       if (e === "next") {
@@ -63,9 +67,7 @@ const searchedList = userStates.data.filter(u => {
                     <td>
                       <Link
                         className="my-user"
-                        to="/userDetail"
-                        onClick={() => actions.targetIdSetter(e.id)}
-                      >
+                        to={`/userDetail/${e.id}`}>
                         {e.name}
                       </Link>
                     </td>

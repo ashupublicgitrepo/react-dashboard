@@ -1,10 +1,12 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 
-const Search = ({input, inputSetter, phase, data, targetId}) => {
+const Search = ({input, inputSetter, phase, data}) => {
+  const location = useLocation();
 
     return (
       <>
-        {phase === "idle" && data.length>0 && !targetId && (
+        {phase === "idle" && data.length>0 && location.pathname==="/" && (
             <div>
               <form action="" onSubmit={(e) => e.preventDefault()}>
                 <label htmlFor="search">search user </label>

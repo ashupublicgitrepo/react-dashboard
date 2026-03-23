@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import "./TableStyles.css";
 
 const UserDetailPage = () => {
-  const { userStates, selections, actions } = useOutletContext();
-  const targetId = selections.targetId;
-  const user = userStates.data.find((u) => u.id === targetId);
+  const { userStates } = useOutletContext();
+  const locationId = useParams();
+  // const navigate = useNavigate();
+  const targetId = Number( locationId.id);
+  const user = userFinder();
   const [comment, setComment] = useState({
     phase: null,
     targetId: null,
@@ -26,7 +28,14 @@ const UserDetailPage = () => {
   const start = (currentPage - 1) * itemsPerPage;
   const end = currentPage * itemsPerPage;
   const visibleUsers = userPosts.post.slice(start, end);
-
+  function userFinder() {
+    const user = userStates.data.find(u => u.id === targetId);
+    if (user) return user;
+   
+  }
+  // function navigator(page) {
+    // will be added tomorrow.
+  // }
   function pageSetter(page) {
     setCurrentPage(pr => {
       if (page === "next") {
@@ -39,13 +48,15 @@ const UserDetailPage = () => {
       }
     })
   }
+  
+ 
   function updateState(newState) {
     setUserPosts((pr) => ({ ...pr, ...newState }));
   }
   function userPostFetcher() {
     updateState({ phase: "loading" });
     fetch(
-      `https://jsonplaceholder.typicode.com/posts?userId=${selections.targetId}`,
+      `https://jsonplaceholder.typicode.com/posts?userId=${targetId}`,
     )
       .then((res) => {
         if (!res.ok) throw new Error(`server failed to fetch! status: ${res.status}`);
@@ -79,13 +90,16 @@ const UserDetailPage = () => {
       .catch((err) =>setComment(pr => ({ ...pr,targetId:id,comments:[], phase: "error", error: err.message })) );
   }
   useEffect(() => {
-    if (selections.targetId) userPostFetcher();
-  }, [selections.targetId]);
+    if (targetId) userPostFetcher();
+    setCurrentPage(1);
+  }, [targetId]);
 
   return (
     <>
       <Link to="/">
-        <button onClick={() => actions.targetIdSetter(null)}>back</button>
+        <button>
+          <Link className="linkDecorate" to="/">back</Link>
+        </button>
       </Link>
       {!user ? (
         <p>user not found</p>
@@ -98,15 +112,29 @@ const UserDetailPage = () => {
               <p className="user-info">Phone : {user.phone}</p>
               <p className="user-info">Website : {user.website}</p>
               <p className="user-info">Company : {user.company.name}</p>
-                <p className="user-info">Address : {user.address.street}</p>
-                <div style={{textAlign:"center"}}>
-                  {targetId > 1 && <button onClick={() => actions.targetIdSetter(targetId - 1)}>previous User</button>}
-                 {targetId < userStates.data.length && <button onClick={()=>actions.targetIdSetter(targetId+1)}>next User</button>}
-                </div>
+              <p className="user-info">Address : {user.address.street}</p>
+              <div style={{ textAlign: "center" }}>
+                {targetId > 1 && (
+                  <button>
+                    <Link className="linkDecorate" to={`/userDetail/${targetId - 1}`}>
+                      previous User
+                    </Link>
+                  </button>
+                )}
+                {targetId < userStates.data.length && (
+                  <button>
+                    <Link className="linkDecorate" to={`/userDetail/${targetId + 1}`}>
+                     Next User
+                    </Link>
+                  </button>
+                )}
+              </div>
             </div>
             <div className="userpost-div">
               <h3>user posts</h3>
-              {currentPage>1 && <button onClick={() => pageSetter("previous")}>previous</button>}
+              {currentPage > 1 && (
+                <button onClick={() => pageSetter("previous")}>previous</button>
+              )}
               {userPosts.phase === "loading" ? (
                 <p>...loading</p>
               ) : userPosts.phase === "error" ? (
@@ -158,7 +186,11 @@ const UserDetailPage = () => {
                 })
               )}
 
-              {currentPage<maxPage? (<button onClick={() => pageSetter("next")}>next</button>): (<p>this is last page</p>)}
+              {currentPage < maxPage ? (
+                <button onClick={() => pageSetter("next")}>next</button>
+              ) : (
+                <p>this is last page</p>
+              )}
               <p>page {currentPage}</p>
             </div>
           </div>

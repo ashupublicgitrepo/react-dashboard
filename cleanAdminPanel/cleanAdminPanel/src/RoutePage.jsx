@@ -15,7 +15,7 @@ const appRoute = createBrowserRouter([
                 element: <UIPage />
             },
             {
-                path: "userDetail",
+                path: "/userDetail/:id",
                 element: <UserDetailPage />
             },
            ]
