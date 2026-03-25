@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import UIPage from "./UIPage";
 import App from "./App";
 import UserDetailPage from "./UserDetailPage";
+import DeleteModel from "./DeleteModel";
 
 const appRoute = createBrowserRouter([
     {
@@ -18,6 +19,10 @@ const appRoute = createBrowserRouter([
                 path: "/userDetail/:id",
                 element: <UserDetailPage />
             },
+            {
+                path: "/delete/:id",
+                element:<DeleteModel/>
+            }
            ]
     }
 ]

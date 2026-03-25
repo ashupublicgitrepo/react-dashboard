@@ -5,27 +5,37 @@ import Search from "./Search.jsx";
 import UserPage from "./UserPage.jsx";
 import { useNavigate } from "react-router-dom";
 import FakeUsers from "./assets/FakeUsers.jsx";
+import DeleteModel from "./DeleteModel.jsx";
 
 const url = "https://jsonplaceholder.typicode.com/users";
 const App = () => {
   const [data, setData] = useState([]);
   const [input, setInput] = useState("");
-  const [state, setState] = useState({ phase: "loading", status: "load" });
+  const [state, setState] = useState({
+    phase: "loading",
+    status: "load",
+    action: null,
+  });
   const ref = useRef();
   const navigate = useNavigate();
- 
-   function inputSetter(e) {
-     const valueInInputTerminal = e.target.value;
-     setInput(valueInInputTerminal);
-     if (!valueInInputTerminal) return navigate("/");
-     if (ref.current) clearTimeout(ref.current) ;
-     ref.current = setTimeout(() => {
-      navigate(`/?search=${valueInInputTerminal}`)
-     }, 500);
-    
-   }
+
+
+
+  function inputSetter(e) {
+    const valueInInputTerminal = e.target.value;
+    if (valueInInputTerminal) {
+      setInput(valueInInputTerminal);
+    }
+    if (!valueInInputTerminal) {
+      return navigate("/");
+    }
+    if (ref.current) clearTimeout(ref.current);
+    ref.current = setTimeout(() => {
+      navigate(`/?search=${valueInInputTerminal}`);
+    }, 500);
+  }
   async function wait() {
-    return new Promise(res=>setTimeout(res,1000))
+    return new Promise((res) => setTimeout(res, 1000));
   }
 
   function updateState(state) {
@@ -44,24 +54,24 @@ const App = () => {
       updateState({ phase: "error", status: "serverError" });
     }
   }
- 
+
   useEffect(() => {
     fetcher();
   }, []);
 
-  
+  function deleteConfirmDilogue(id) {
+    navigate(`/delete/${id}`);
+  }
   async function deleter(id) {
-    const confirmation = window.confirm("are you sure");
-    if (!confirmation) return false;
     try {
-      const newData = data.filter(u => u.id !== id);
+      const newData = data.filter((u) => u.id !== id);
       setData(newData);
       updateState({ status: "deleted" });
     } catch {
-      updateState({phase:"error", status: "deleteFailed" });
+      updateState({ phase: "error", status: "deleteFailed" });
     } finally {
       await wait();
-      updateState({status: null });
+      updateState({ status: null });
     }
   }
 
@@ -81,6 +91,7 @@ const App = () => {
         phase={state.phase}
         data={data}
         input={input}
+        deleteConfirmDilogue={deleteConfirmDilogue}
         deleter={deleter}
       />
     </>

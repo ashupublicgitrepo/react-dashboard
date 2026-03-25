@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import "./TableStyles.css";
-import { useLocation, useOutletContext } from "react-router-dom";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 
@@ -8,11 +8,11 @@ const UIPage = () => {
   const { userStates, actions } = useOutletContext();
   const [currentPage, setCurrentPage] = useState(1);
   const locations = useLocation();
-  const searchedUser = locations.search.split("=")[1];
-  const searchedList = userStates.data.filter(u => {
-    if (!userStates.input || !searchedUser) return true;
-    return u.name.toUpperCase().includes(searchedUser.toUpperCase())
-  })
+  const navigate = useNavigate();
+  const searchedUser = locations.search.split("=");
+  const searchedList = filterer();
+
+    
   const itemsPerPage = 5;
   const totalItems = searchedList.length;
   const maxPage = Math.ceil(totalItems / itemsPerPage);
@@ -23,7 +23,33 @@ const UIPage = () => {
     setCurrentPage(1);
   },[userStates.input])
 
-
+  function sorter(e) {
+    const sortPref = e.target.value;
+    if (sortPref === "select") return false;
+    navigate(`/?sort=${sortPref}`);
+  }
+  function filterer() {
+    if (searchedUser) {
+      if (searchedUser[0] === "?sort") {
+        switch (searchedUser[1]) {
+          case "name": return userStates.data.toSorted((user1, user2) =>
+            user1.name.localeCompare(user2.name));
+            break;
+          case "id": return userStates.data.toSorted((userId1, userId2) => userId1.id - userId2.id);
+            break;
+          default : return userStates.data.toSorted(
+            (userId1, userId2) => userId1.id - userId2.id,
+          );
+        }
+        
+      }
+        if(searchedUser[0]==="?search") { return userStates.data.filter(u => u.name.toUpperCase().includes(searchedUser[1].toUpperCase())) 
+        }
+    }
+    return userStates.data;
+    
+    }
+  
   function pageSetter(e) {
     setCurrentPage(pr => {
       if (e === "next") {
@@ -44,8 +70,32 @@ const UIPage = () => {
 
   return (
     <>
-      {currentPage>1 && <button onClick={() => pageSetter("previous")}>previous</button>}
-     {currentPage< maxPage && <button onClick={() => pageSetter("next")}>Next</button>}
+      {userStates.data && (
+        <div style={{ display: "inline", margin:"5px" }}>
+          <label htmlFor="sort">sort</label>
+          <select id="sort" onChange={(e) => sorter(e)}>
+            <option>select</option>
+            <option>name</option>
+            <option>id</option>
+          </select>
+        </div>
+      )}
+      {currentPage > 1 && (
+        <button
+          style={{ display: "inline" }}
+          onClick={() => pageSetter("previous")}
+        >
+          previous
+        </button>
+      )}
+      {currentPage < maxPage && (
+        <button
+          style={{ display: "inline" }}
+          onClick={() => pageSetter("next")}
+        >
+          Next
+        </button>
+      )}
       {visibleUsers.length < 1 ? (
         UImsger()
       ) : (
@@ -67,16 +117,16 @@ const UIPage = () => {
                     <td>{i + 1}</td>
                     <td>{e.id}</td>
                     <td>
-                      <Link
-                        className="my-user"
-                        to={`/userDetail/${e.id}`}>
+                      <Link className="my-user" to={`/userDetail/${e.id}`}>
                         {e.name}
                       </Link>
                     </td>
                     <td>{e.email}</td>
                     <td>{e.company.name}</td>
                     <td>
-                      <button onClick={() => actions.deleter(e.id)}>
+                      <button
+                        onClick={() => actions.deleteConfirmDilogue(e.id)}
+                      >
                         delete
                       </button>
                     </td>

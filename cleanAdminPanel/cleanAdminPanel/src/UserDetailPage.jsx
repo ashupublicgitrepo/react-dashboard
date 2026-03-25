@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import "./TableStyles.css";
+import FakeUsers from "./assets/FakeUsers";
 
 const UserDetailPage = () => {
   const { userStates } = useOutletContext();
@@ -15,7 +16,7 @@ const UserDetailPage = () => {
     comments: [],
     error:null
   });
-   
+  const commentRef = useRef();
   const [userPosts, setUserPosts] = useState({
     phase: "idle",
     error: null,
@@ -33,14 +34,29 @@ const UserDetailPage = () => {
     if (user) return user;
    
   }
+  function userPresentConfirmer(page) {
+    return userStates.data.some(u => u.id === page);
+  }
+  function previousUserConfirmer(page) {
+    return userStates.data.some(u => u.id < page);
+  }
+  function nextUserConfirmer(page) {
+    return userStates.data.some(u => u.id > page);
+  }
+  function nextUserFinder(page) {
+    return userStates.data.find((u) => u.id > page);
+  }
+  function previousUserFinder(page) {
+    return userStates.data.findLast((u) => u.id < page);
+  }
   function navigator(page) {
-    const userPresent = userStates.data.some(u => u.id === page);
+    const userPresent = userPresentConfirmer(page)
     if (userPresent) return navigate(`/userDetail/${page}`);
     if (targetId < page) {
-      const nextPresent = userStates.data.find(u => u.id > page);
+      const nextPresent = nextUserFinder(page);
       navigate(`/userDetail/${nextPresent.id}`);
     } if (targetId > page) {
-      const previousPresent = userStates.data.findLast(u => u.id < page);
+      const previousPresent = previousUserFinder(page);
       navigate(`/userDetail/${previousPresent.id}`);
     }
     
@@ -57,7 +73,7 @@ const UserDetailPage = () => {
       }
     })
   }
-  
+
  
   function updateState(newState) {
     setUserPosts((pr) => ({ ...pr, ...newState }));
@@ -103,6 +119,37 @@ const UserDetailPage = () => {
     setCurrentPage(1);
   }, [targetId]);
 
+
+  function handleCommentSubmit(e, uId) {
+    e.preventDefault();
+    const val = commentRef.current.value;
+    if (!val.trim()) return false;
+    const postCom = {
+      postId: uId,
+      email: "local@client.dev",
+      id: Date.now(),
+      name: "dev.localUser",
+      body: val,
+    };
+
+    setComment((pr) => {
+      const newCommentList = [postCom, ...pr.comments];
+      return { ...pr, comments: newCommentList };
+    });
+    fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST",
+      body: JSON.stringify(postCom),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    })
+      .then((res) => res.json())
+      .catch((err) =>
+        setComment((pr) => ({ ...pr, status: "error", errorMsg: err })),
+      );
+
+    commentRef.current.value = null;
+  }
   return (
     <>
       <Link to="/" className="linkDecorate">
@@ -113,7 +160,7 @@ const UserDetailPage = () => {
       ) : (
         <>
           <div className="userDetail">
-              <div id="userDetailDiv">
+            <div id="userDetailDiv">
               <p className="user-info">{user.name}</p>
               <p className="user-info">Email : {user.email}</p>
               <p className="user-info">Phone : {user.phone}</p>
@@ -121,13 +168,13 @@ const UserDetailPage = () => {
               <p className="user-info">Company : {user.company.name}</p>
               <p className="user-info">Address : {user.address.street}</p>
               <div style={{ textAlign: "center" }}>
-                {targetId > 1 && (
-                  <button onClick={()=>navigator(targetId - 1)}>
+                {previousUserConfirmer(targetId) && (
+                  <button onClick={() => navigator(targetId - 1)}>
                     previous user
                   </button>
                 )}
-                {targetId < userStates.data.length && (
-                  <button onClick={()=>navigator(targetId + 1)}>
+                {nextUserConfirmer(targetId) && (
+                  <button onClick={() => navigator(targetId + 1)}>
                     next user
                   </button>
                 )}
@@ -135,11 +182,15 @@ const UserDetailPage = () => {
             </div>
             <div className="userpost-div">
               <h3>user posts</h3>
+
               {currentPage > 1 && (
                 <button onClick={() => pageSetter("previous")}>previous</button>
               )}
               {userPosts.phase === "loading" ? (
-                <p>...loading</p>
+                <div>
+                    <p>...loading</p>
+                    <FakeUsers/>
+                </div>
               ) : userPosts.phase === "error" ? (
                 <div>
                   <p>{userPosts.error}</p>
@@ -160,7 +211,10 @@ const UserDetailPage = () => {
                       {comment.targetId === d.id && (
                         <div>
                           {comment.phase === "loading" ? (
-                            <p>...loading</p>
+                            <div>
+                              <p>...loading</p>
+                              <FakeUsers />
+                            </div>
                           ) : comment.phase === "error" ? (
                             <div>
                               <p>{comment.error}</p>
@@ -169,18 +223,29 @@ const UserDetailPage = () => {
                               </button>
                             </div>
                           ) : (
-                            comment.comments.map((e) => (
-                              <div key={e.id}>
-                                <div className="commenterDiv">
-                                  <div id="commenterInfo">
-                                    <div className="userThumb"></div>
-                                    <h5>{e.email}</h5>
-                                  </div>
-                                  <p>{e.name}</p>
-                                  <p>{e.body}</p>
-                                </div>
+                            <div>
+                              <div>
+                                <form
+                                  action=""
+                                  onSubmit={(e) => handleCommentSubmit(e, d.id)}
+                                >
+                                  <input type="text" ref={commentRef} />
+                                  <button>post</button>
+                                </form>
                               </div>
-                            ))
+                              {comment.comments.map((e) => (
+                                <div key={e.id}>
+                                  <div className="commenterDiv">
+                                    <div id="commenterInfo">
+                                      <div className="userThumb"></div>
+                                      <h5>{e.email}</h5>
+                                    </div>
+                                    <h4>{e.name}</h4>
+                                    <p>{e.body}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           )}
                         </div>
                       )}
