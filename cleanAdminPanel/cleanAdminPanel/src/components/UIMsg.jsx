@@ -1,5 +1,5 @@
 import React from "react";
-import "./TableStyles.css"
+import "../styles/TableStyles.css";
 
 const UIMsg = ({ status, fetcher }) => {
   

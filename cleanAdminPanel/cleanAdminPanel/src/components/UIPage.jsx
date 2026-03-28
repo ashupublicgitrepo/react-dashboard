@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import "./TableStyles.css";
+import "../styles/TableStyles.css";
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useState } from "react";

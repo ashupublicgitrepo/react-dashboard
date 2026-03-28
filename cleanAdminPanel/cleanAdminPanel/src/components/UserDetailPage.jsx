@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
-import "./TableStyles.css";
-import FakeUsers from "./assets/FakeUsers";
+import "../styles/TableStyles.css";
+import FakeUsers from "./FakeUsers";
 
 const UserDetailPage = () => {
   const { userStates } = useOutletContext();
-  const {id} = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const targetId = Number(id);
   const user = userFinder();
@@ -14,13 +14,13 @@ const UserDetailPage = () => {
     phase: null,
     targetId: null,
     comments: [],
-    error:null
+    error: null,
   });
   const commentRef = useRef();
   const [userPosts, setUserPosts] = useState({
     phase: "idle",
     error: null,
-    post:[]
+    post: [],
   });
   const [currentPage, setCurrentPage] = useState(1);
   const totalItems = userPosts.post.length;
@@ -30,18 +30,17 @@ const UserDetailPage = () => {
   const end = currentPage * itemsPerPage;
   const visibleUsers = userPosts.post.slice(start, end);
   function userFinder() {
-    const user = userStates.data.find(u => u.id === targetId);
+    const user = userStates.data.find((u) => u.id === targetId);
     if (user) return user;
-   
   }
   function userPresentConfirmer(page) {
-    return userStates.data.some(u => u.id === page);
+    return userStates.data.some((u) => u.id === page);
   }
   function previousUserConfirmer(page) {
-    return userStates.data.some(u => u.id < page);
+    return userStates.data.some((u) => u.id < page);
   }
   function nextUserConfirmer(page) {
-    return userStates.data.some(u => u.id > page);
+    return userStates.data.some((u) => u.id > page);
   }
   function nextUserFinder(page) {
     return userStates.data.find((u) => u.id > page);
@@ -50,19 +49,19 @@ const UserDetailPage = () => {
     return userStates.data.findLast((u) => u.id < page);
   }
   function navigator(page) {
-    const userPresent = userPresentConfirmer(page)
+    const userPresent = userPresentConfirmer(page);
     if (userPresent) return navigate(`/userDetail/${page}`);
     if (targetId < page) {
       const nextPresent = nextUserFinder(page);
       navigate(`/userDetail/${nextPresent.id}`);
-    } if (targetId > page) {
+    }
+    if (targetId > page) {
       const previousPresent = previousUserFinder(page);
       navigate(`/userDetail/${previousPresent.id}`);
     }
-    
   }
   function pageSetter(page) {
-    setCurrentPage(pr => {
+    setCurrentPage((pr) => {
       if (page === "next") {
         if (pr < maxPage) return pr + 1;
         return pr;
@@ -71,54 +70,70 @@ const UserDetailPage = () => {
         if (pr > 1) return pr - 1;
         return pr;
       }
-    })
+    });
   }
 
- 
   function updateState(newState) {
     setUserPosts((pr) => ({ ...pr, ...newState }));
   }
   function userPostFetcher() {
     updateState({ phase: "loading" });
-    fetch(
-      `https://jsonplaceholder.typicode.com/posts?userId=${targetId}`,
-    )
+    fetch(`https://jsonplaceholder.typicode.com/posts?userId=${targetId}`)
       .then((res) => {
-        if (!res.ok) throw new Error(`server failed to fetch! status: ${res.status}`);
-        else return res.json()
+        if (!res.ok)
+          throw new Error(`server failed to fetch! status: ${res.status}`);
+        else return res.json();
       })
       .then((json) => {
-        updateState({ post:json, phase: "idle", error:null });
+        updateState({ post: json, phase: "idle", error: null });
       })
-      .catch((err) => updateState({phase:"error",post:[], error: err.message }));
+      .catch((err) =>
+        updateState({ phase: "error", post: [], error: err.message }),
+      );
   }
- 
+
   function commentFetcher(id) {
     if (comment.phase === "loading") return false;
     setComment((pr) => {
-      if (pr.targetId === id) { return { ...pr, targetId: null, comments: [], error: null, phase: "idle" }} 
-     return { ...pr, phase: "loading",comments:[], targetId: id };
-    } );
+      if (pr.targetId === id) {
+        return {
+          ...pr,
+          targetId: null,
+          comments: [],
+          error: null,
+          phase: "idle",
+        };
+      }
+      return { ...pr, phase: "loading", comments: [], targetId: id };
+    });
     fetch(`https://jsonplaceholder.typicode.com/posts/${id}/comments?_limit=10`)
       .then((res) => {
-        if (!res.ok) throw new Error(`server failed to fetch! status: ${res.status}`);
-         return res.json();
+        if (!res.ok)
+          throw new Error(`server failed to fetch! status: ${res.status}`);
+        return res.json();
       })
-      .then((json) => setComment(pr => ({
-            ...pr,
-            phase: "idle",
-            error: null,
-            comments: json,
-          })
-        )
+      .then((json) =>
+        setComment((pr) => ({
+          ...pr,
+          phase: "idle",
+          error: null,
+          comments: json,
+        })),
       )
-      .catch((err) =>setComment(pr => ({ ...pr,targetId:id,comments:[], phase: "error", error: err.message })) );
+      .catch((err) =>
+        setComment((pr) => ({
+          ...pr,
+          targetId: id,
+          comments: [],
+          phase: "error",
+          error: err.message,
+        })),
+      );
   }
   useEffect(() => {
     if (targetId) userPostFetcher();
     setCurrentPage(1);
   }, [targetId]);
-
 
   function handleCommentSubmit(e, uId) {
     e.preventDefault();
@@ -188,8 +203,8 @@ const UserDetailPage = () => {
               )}
               {userPosts.phase === "loading" ? (
                 <div>
-                    <p>...loading</p>
-                    <FakeUsers/>
+                  <p>...loading</p>
+                  <FakeUsers />
                 </div>
               ) : userPosts.phase === "error" ? (
                 <div>

@@ -4,7 +4,7 @@ import UIMsg from "./UIMsg.jsx";
 import Search from "./Search.jsx";
 import UserPage from "./UserPage.jsx";
 import { useNavigate } from "react-router-dom";
-import FakeUsers from "./assets/FakeUsers.jsx";
+import FakeUsers from "./FakeUsers.jsx";
 import DeleteModel from "./DeleteModel.jsx";
 
 const url = "https://jsonplaceholder.typicode.com/users";
@@ -15,12 +15,10 @@ const App = () => {
     phase: "loading",
     status: "load",
     action: null,
-    deleteId:null,
+    deleteId: null,
   });
   const ref = useRef();
   const navigate = useNavigate();
-
-
 
   function inputSetter(e) {
     const valueInInputTerminal = e.target.value;
@@ -61,7 +59,7 @@ const App = () => {
   }, []);
 
   function deleteConfirmDilogue(id) {
-    updateState({ deleteId:id });
+    updateState({ deleteId: id });
   }
   async function deleter(id) {
     if (id === null) return updateState({ deleteId: null });
@@ -73,13 +71,15 @@ const App = () => {
       updateState({ phase: "error", status: "deleteFailed" });
     } finally {
       await wait();
-      updateState({ status: null, deleteId:null });
+      updateState({ status: null, deleteId: null });
     }
   }
 
   return (
     <>
-      {state.deleteId !== null && <DeleteModel deleteId={state.deleteId} deleter={deleter} />}
+      {state.deleteId !== null && (
+        <DeleteModel deleteId={state.deleteId} deleter={deleter} />
+      )}
       <div>
         <Header />
         <UIMsg status={state.status} fetcher={fetcher} />
