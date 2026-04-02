@@ -1,8 +1,10 @@
-*{
+* {
   box-sizing: border-box;
 }
 
-.my-table, .my-table th, .my-table td {
+.my-table,
+.my-table th,
+.my-table td {
   border: 1px solid rgb(0, 0, 0); /* Apply border to the table and all cells */
 }
 
@@ -11,7 +13,8 @@
   width: 100%;
 }
 
-.my-table th, .my-table td {
+.my-table th,
+.my-table td {
   padding: 10px; /* Add some padding for better readability */
   text-align: center;
 }
@@ -20,7 +23,7 @@
   font-family: sans-serif;
   color: brown;
 }
-#userDetailDiv{
+#userDetailDiv {
   border: 1px solid rgb(11, 94, 210);
   width: 400px;
   display: flex, inline;
@@ -30,25 +33,20 @@
   margin-top: 5px;
   border-radius: 5px;
   height: fit-content;
-  
-  
-  
 }
 
 .user-info {
-background-color: beige;
-border-radius: 5px;
-border: 2px solid rgb(94, 145, 204);
-padding: 3px;
-width: max-content;
+  background-color: beige;
+  border-radius: 5px;
+  border: 2px solid rgb(94, 145, 204);
+  padding: 3px;
+  width: max-content;
 }
-.userDetail{
+.userDetail {
   display: flex;
-  
-
 }
 
-.userpost-div{
+.userpost-div {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -58,15 +56,14 @@ width: max-content;
   border: 1px solid darkkhaki;
   border-radius: 5px;
   width: 100%;
-
 }
-.user-postTitle{
+.user-postTitle {
   background-color: rgb(230, 237, 168);
   width: fit-content;
   padding-inline: 4px;
   border-radius: 2px;
 }
-.userposts{
+.userposts {
   background-color: rgb(162, 231, 246);
   border-bottom-left-radius: 10px;
   border-top-right-radius: 10px;
@@ -74,13 +71,13 @@ width: max-content;
   padding: 5px;
 }
 
-.userThumb{
+.userThumb {
   width: 25px;
   height: 25px;
   background-color: #68d9cc;
   border-radius: 50%;
 }
-#commentButton{
+#commentButton {
   border: 1px solid black;
   width: fit-content;
   padding: 2px;
@@ -88,17 +85,16 @@ width: max-content;
   background-color: antiquewhite;
   cursor: pointer;
 }
-.commenterDiv{
- background-color: rgb(249, 249, 244);
+.commenterDiv {
+  background-color: rgb(249, 249, 244);
   margin: 10px;
   border-radius: 10px;
 }
-#commenterInfo{
-display: flex;
-align-items: center;
-gap: 5px;
-
+#commenterInfo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
-.linkDecorate{
+.linkDecorate {
   text-decoration: none;
 }

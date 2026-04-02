@@ -1,8 +1,7 @@
 import React, { useEffect } from "react";
 import "../styles/TableStyles.css";
-import {Link, useNavigate, useOutletContext } from "react-router-dom";
+import { Link, useNavigate, useOutletContext } from "react-router-dom";
 import { useState } from "react";
-
 
 const UIPage = () => {
   const { userStates } = useOutletContext();
@@ -13,23 +12,21 @@ const UIPage = () => {
   const sortVal = urlParams.get("sort");
   const searchedList = filterer();
 
-    
   const itemsPerPage = 5;
   const totalItems = searchedList.length;
   const maxPage = Math.ceil(totalItems / itemsPerPage);
-  const start = (currentPage-1) * itemsPerPage;
-  const end =  currentPage*itemsPerPage;
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = currentPage * itemsPerPage;
   const visibleUsers = searchedList.slice(start, end);
   useEffect(() => {
     setCurrentPage(1);
-  },[userStates.input])
+  }, [userStates.input]);
 
   function sorter(e) {
     const sortPref = e.target.value;
     if (sortPref === "select") navigate("/");
     else {
-      navigate(`/?sort=${sortPref}${searchVal?`&search=${searchVal}`: ""}`);
-      
+      navigate(`/?sort=${sortPref}${searchVal ? `&search=${searchVal}` : ""}`);
     }
   }
   function filterer() {
@@ -40,36 +37,35 @@ const UIPage = () => {
         u.name.toUpperCase().includes(searchVal.toUpperCase()),
       );
     }
-      if (sortVal) {
-        switch (sortVal) {
-          case "name": return list.toSorted((user1, user2) =>
-            user1.name.localeCompare(user2.name));
-            break;
-          case "id":return list.toSorted((userId1, userId2) => userId1.id - userId2.id);
-            break;
-          default : return list.toSorted(
-            (userId1, userId2) => userId1.id - userId2.id,
+    if (sortVal) {
+      switch (sortVal) {
+        case "name":
+          return list.toSorted((user1, user2) =>
+            user1.name.localeCompare(user2.name),
           );
-        }
-        
+          break;
+        case "id":
+          return list.toSorted((userId1, userId2) => userId1.id - userId2.id);
+          break;
+        default:
+          return list.toSorted((userId1, userId2) => userId1.id - userId2.id);
       }
-        
-      return list;
     }
-    
-   
-  
+
+    return list;
+  }
+
   function pageSetter(e) {
-    setCurrentPage(pr => {
+    setCurrentPage((pr) => {
       if (e === "next") {
         if (pr < maxPage) return pr + 1;
-        return pr;      
-      };
-      if (e === "previous") {
-        if (pr >1) return pr-1;
         return pr;
       }
-    })
+      if (e === "previous") {
+        if (pr > 1) return pr - 1;
+        return pr;
+      }
+    });
   }
   function UImsger() {
     if (userStates.phase !== "idle") return false;
@@ -77,16 +73,19 @@ const UIPage = () => {
     if (visibleUsers.length < 1) return "no matching users found";
   }
 
-
   return (
     <>
       {userStates.data && (
-        <div style={{ display: "inline", margin:"5px" }}>
+        <div style={{ display: "inline", margin: "5px" }}>
           <label htmlFor="sort">sort</label>
-          <select id="sort" value={sortVal || "select"} onChange={(e) => sorter(e)}>
-            <option value = "select">select</option>
-            <option value = "name">name</option>
-            <option value = "id">id</option>
+          <select
+            id="sort"
+            value={sortVal || "select"}
+            onChange={(e) => sorter(e)}
+          >
+            <option value="select">select</option>
+            <option value="name">name</option>
+            <option value="id">id</option>
           </select>
         </div>
       )}

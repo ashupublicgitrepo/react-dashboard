@@ -39,7 +39,6 @@ const App = () => {
     return new Promise((res) => setTimeout(res, 1000));
   }
 
-  
   function updateState(state) {
     setState((pr) => ({ ...pr, ...state }));
   }
