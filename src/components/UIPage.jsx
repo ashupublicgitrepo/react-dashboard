@@ -146,6 +146,7 @@ const UIPage = () => {
           </table>
         </div>
       )}
+      <button onClick={actions.userAdder}>Add new user</button>
     </>
   );
 };

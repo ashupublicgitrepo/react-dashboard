@@ -76,6 +76,9 @@ const App = () => {
       updateState({ status: null, deleteId: null });
     }
   }
+  function userAdder() {
+    navigate("/addUser");
+  }
 
   return (
     <>
@@ -99,6 +102,7 @@ const App = () => {
           input={input}
           deleteConfirmDilogue={deleteConfirmDilogue}
           deleter={deleter}
+          userAdder={userAdder}
         />
       </div>
     </>

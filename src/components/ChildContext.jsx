@@ -7,13 +7,14 @@ const ChildContext = ({
   input,
   deleteConfirmDilogue,
   deleter,
+  userAdder
 }) => {
   return (
     <>
       <Outlet
         context={{
           userStates: { phase, data, input },
-          actions: { deleteConfirmDilogue, deleter },
+          actions: { deleteConfirmDilogue, deleter, userAdder },
         }}
       />
     </>
