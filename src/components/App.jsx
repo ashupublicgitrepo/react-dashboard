@@ -79,6 +79,10 @@ const App = () => {
   function userAdder() {
     navigate("/addUser");
   }
+  function newUserAdder(newUser) {
+    setData(pr => ([newUser, ...pr]));
+    navigate("/");
+  }
 
   return (
     <>
@@ -103,6 +107,7 @@ const App = () => {
           deleteConfirmDilogue={deleteConfirmDilogue}
           deleter={deleter}
           userAdder={userAdder}
+          newUserAdder={newUserAdder}
         />
       </div>
     </>

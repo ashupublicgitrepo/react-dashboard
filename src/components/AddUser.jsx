@@ -1,6 +1,9 @@
 import React, { useRef, useState } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
 
 const AddUser = () => {
+  const { actions } = useOutletContext();
+  const navigate = useNavigate();
   const [phase, setPhase] = useState({
     phase: "idle",
     error: null
@@ -32,17 +35,15 @@ const AddUser = () => {
   const refWeb = useRef();
   const refCompany = useRef();
   const refAddress = useRef();
-
-  function formHandler(e) {
-    e.preventDefault();
+  function dataHandler() {
       const name = refName.current.value;
       const email = refEmail.current.value;
       const phone = refPhone.current.value;
       const web = refWeb.current.value;
       const company = refCompany.current.value;
-      const address = refAddress.current.value;
-    if (!dataVerifier()) return false;
-    const userDetail = {
+    const address = refAddress.current.value;
+    return {
+      id: Date.now(),
       name: name,
       email: email,
       phone: phone,
@@ -50,6 +51,14 @@ const AddUser = () => {
       company: { name: company },
       address: { street: address },
     };
+}
+
+
+  function formHandler(e) {
+    e.preventDefault();
+    if (!dataVerifier()) return false;
+    const userDetail = dataHandler();
+    actions.newUserAdder(userDetail);
     
   }
   function resetter(e) {
@@ -63,31 +72,36 @@ const AddUser = () => {
     refAddress.current.value = null;
   }
   function dataVerifier() {
-       const name = refName.current.value;
-       const email = refEmail.current.value;
-       const phone = refPhone.current.value;
-       const web = refWeb.current.value;
-       const company = refCompany.current.value;
-    const address = refAddress.current.value;
+   
 
-    if (name.length < 1) {
+    if (dataHandler().name.length < 1) {
       setPhase({phase:"error", error: "checkName"});
       return false};
-    if (email.length < 1 || !email.includes("@")) {
+    if (dataHandler().email.length < 1 || !dataHandler().email.includes("@")) {
       setPhase({ phase: "error", error: "checkEmail" });
-      return false};
-    if (phone.length < 10) {
+      return false;
+    };
+    if (dataHandler().phone.length < 10) {
       setPhase({ phase: "error", error: "checkPhone" });
-      return false};
-    if (!web.includes("www") || !web.includes(".com") && !web.includes(".org") && !web.includes(".in") ) {
+      return false;
+    };
+    if (
+      !dataHandler().website.includes("www") ||
+      !dataHandler().website.includes(".com") &&
+        !dataHandler().website.includes(".org") &&
+        !dataHandler().website.includes(".in")
+    ) {
       setPhase({ phase: "error", error: "checkWeb" });
-      return false};
-    if (company.length < 1) {
+      return false;
+    };
+    if (dataHandler().company.name.length < 1) {
       setPhase({ phase: "error", error: "checkComapny" });
-      return false};
-    if (address.length-1 < 1) {
+      return false;
+    };
+    if (dataHandler().address.street.length - 1 < 1) {
       setPhase({ phase: "error", error: "checkAddress" });
-      return false};
+      return false;
+    };
     setPhase({ phase: "success", error: null });
     return true;
   }
@@ -122,7 +136,7 @@ const AddUser = () => {
             </div>
 
             {phase.phase === "error" && <div>{phase.error}</div>}
-            <button>cancle</button>
+            <button onClick={()=>navigate("/")}>cancle</button>
           </div>
         </form>
       </div>
